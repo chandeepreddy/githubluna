@@ -1,0 +1,4 @@
+<apex:page standardController="Account" extensions="sp_am.ActivitiesController" sidebar="false" title="Edit Account Plan for {!Account.Name}">
+<apex:SectionHeader title="{!Account.Name}" subtitle="Edit Account Plan" />
+<c:EditPlan />
+</apex:page>

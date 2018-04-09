@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>Activity_Status_L__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF( IsNeglected__c, &quot;1-Red&quot;, IF(ISBLANK(Next_Activity_ID__c), &quot;2-Yellow&quot;, &quot;3-Green&quot;))</formula>
+        <inlineHelpText>Use in list views and reports in Lightning interface in place of stoplight image</inlineHelpText>
+        <label>Activity Status L</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Activity_Status__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF( IsNeglected__c ,IMAGE(&quot;/resource/1414939200000/sp_am__Red_Light&quot;, &quot;Red Light&quot;), IF(ISBLANK(Next_Activity_ID__c), IMAGE(&quot;/resource/1414940141000/sp_am__Yellow_Light&quot;, &quot;Yellow Light&quot;), IMAGE(&quot;/resource/1414940141000/sp_am__Green_Light&quot;, &quot;Green Light&quot;)))</formula>
+        <inlineHelpText>Green - Well Managed; Yellow - Not neglected but no scheduled activities; Red - Neglected;</inlineHelpText>
+        <label>Activity Status</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>IsNeglected__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF(ISBLANK(Last_Completed_Activity_Date__c), 
+IF(ISBLANK(Next_Activity_Date__c),true,false),
+IF(Last_Completed_Activity_Date__c &gt; (Today() - $Setup.Neglected_Account__c.Days__c  ),false,true))</formula>
+        <label>Neglected</label>
+        <trackHistory>false</trackHistory>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Last_Completed_Activity_Date__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Last Completed Activity Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>New_Task__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>HYPERLINK(&quot;/00T/e?what_id=&quot; &amp;  Id  &amp; &quot;&amp;retURL=/&quot; &amp; Id,  IMAGE(&quot;/resource/1414943308000/sp_am__New_Task&quot;, &quot;New Task&quot;) , &quot;_top&quot;)</formula>
+        <label>New Task</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Next_Activity_Date__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Next Activity Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>Next_Activity_ID__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>The record ID of the next scheduled activity</inlineHelpText>
+        <label>Next Activity ID</label>
+        <length>18</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Next_Activity_Subject__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Next Activity Subject</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Next_Activity__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>HYPERLINK(&quot;/&quot; &amp;  Next_Activity_ID__c,  Next_Activity_Subject__c, &quot;_top&quot; )</formula>
+        <inlineHelpText>View the next scheduled activity for this Account</inlineHelpText>
+        <label>Next Activity</label>
+        <required>false</required>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Number_of_Completed_Activities__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Number of Completed Activities</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Number_of_Future_Activities__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Number of Future Activities</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Number_of_Overdue_Activities__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Number of Overdue Activities</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <listViews>
+        <fullName>My_Neglected_Accounts</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>New_Task__c</columns>
+        <columns>CORE.USERS.LAST_NAME</columns>
+        <columns>Last_Completed_Activity_Date__c</columns>
+        <columns>Number_of_Completed_Activities__c</columns>
+        <columns>Number_of_Future_Activities__c</columns>
+        <columns>Number_of_Overdue_Activities__c</columns>
+        <filterScope>Mine</filterScope>
+        <filters>
+            <field>IsNeglected__c</field>
+            <operation>equals</operation>
+            <value>1</value>
+        </filters>
+        <label>My Neglected Accounts</label>
+    </listViews>
+    <listViews>
+        <fullName>Neglected_Accounts</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>New_Task__c</columns>
+        <columns>CORE.USERS.LAST_NAME</columns>
+        <columns>Last_Completed_Activity_Date__c</columns>
+        <columns>Number_of_Completed_Activities__c</columns>
+        <columns>Number_of_Future_Activities__c</columns>
+        <columns>Number_of_Overdue_Activities__c</columns>
+        <filterScope>Everything</filterScope>
+        <filters>
+            <field>IsNeglected__c</field>
+            <operation>equals</operation>
+            <value>1</value>
+        </filters>
+        <label>Neglected Accounts</label>
+    </listViews>
+    <webLinks>
+        <fullName>Edit_Plan</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>page</linkType>
+        <masterLabel>Edit Plan</masterLabel>
+        <openType>replace</openType>
+        <page>EditAccountActivities</page>
+        <protected>false</protected>
+    </webLinks>
+</CustomObject>

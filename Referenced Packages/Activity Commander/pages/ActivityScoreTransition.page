@@ -1,0 +1,3 @@
+<apex:page standardController="sp_am__Activity_Score__c" extensions="sp_am.PointsController" action="redirect">
+Redirecting to the Activity Scoring page...
+</apex:page>

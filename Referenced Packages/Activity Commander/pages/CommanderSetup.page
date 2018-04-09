@@ -1,0 +1,113 @@
+<apex:page controller="sp_am.PointsController" title="Activity Commander Maintenance" tabstyle="Commander_Setup__tab" action="{!load}">
+<apex:Form >
+<apex:SectionHeader title="Activity Commander" subtitle="Maintenance" />
+<apex:outputPanel rendered="{!NOT(AllowSetup) || HasErrors}" id="errors">
+	<apex:pageBlock >
+	<apex:pageMessages />
+	</apex:pageBlock>
+</apex:outputPanel>
+<apex:outputPanel rendered="{!AllowSetup && NOT(HasErrors)}" id="All">
+	<apex:actionStatus startText="Saving..." id="saveStatus"/>
+	<apex:actionStatus startText="Processing... Please wait..." id="processingStatus"/>
+	<apex:outputPanel id="runOncePanel" rendered="{!showSetupButton}">
+	<apex:pageBlock rendered="{!showSetupButton}" id="runOnce" >
+		<apex:commandButton value="Run Once" action="{!initialBatch}" status="processingStatus" rerender="All,runOnce,runOncePanel"/>
+	</apex:pageBlock>
+	</apex:outputPanel>
+	<apex:pageBlock id="Days" >
+		<apex:pageMessages />
+		<apex:pageBlockButtons location="top" >
+			<apex:commandButton value="Save Settings" action="{!saveDays}" status="saveStatus" rerender="errors,All,Days,Profiles,ProfileScores"/>
+		</apex:pageBlockButtons>		
+		<apex:pageBlockSection columns="1" >
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Minimum Activity Frequency for Accounts" for="aDays"  />
+				<apex:inputField value="{!na.sp_am__Days__c}" id="aDays" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Minimum Activity Frequency for Opportunities" for="oDays"  />
+				<apex:inputField value="{!no.sp_am__Days__c}" id="oDays" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Minimum Activity Frequency for Contacts" for="cDays"  />
+				<apex:inputField value="{!nc.sp_am__Days__c}" id="cDays" />
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Minimum Activity Frequency for Leads" for="lDays"  />
+				<apex:inputField value="{!nl.sp_am__Days__c}" id="lDays" />
+			</apex:pageBlockSectionItem>
+			<apex:inputField value="{!es.sp_am__Task_Row_Limit__c}" id="taskrow" required="true"/> 
+			<apex:inputField value="{!es.sp_am__Event_Row_Limit__c}" id="eventrow" required="true"/>			
+            <apex:pageBlockSectionItem >
+				<apex:outputLabel value="Enable Activity Scoring" for="enable"  />
+				<apex:inputField value="{!es.sp_am__Enable__c}" id="enable"> 
+				<apex:actionSupport event="onchange" rerender="ScoringType"/>
+				</apex:inputField>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem >
+				<apex:outputLabel value="Scoring Type" for="ScoringType"  />
+				<apex:SelectList value="{!es.sp_am__Scoring_Type__c}" size="1" id="ScoringType" disabled="{!NOT(es.sp_am__Enable__c)}">
+					<apex:selectOptions value="{!ScoringTypes}"/>					
+				</apex:SelectList>
+			</apex:pageBlockSectionItem>
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+	<apex:outputPanel id="Profiles" rendered="{!es.sp_am__Enable__c}" >
+	<apex:pageBlock id="ProfileScores">
+		<apex:pageBlockButtons location="bottom" >
+			<apex:commandButton value="Save Scores" action="{!save}" />
+		</apex:pageBlockButtons>
+		<apex:pageBlockSection title="{!ScoringSectionTitle}" columns="1" collapsible="false">			
+			<apex:pageBlockSectionItem rendered="{!es.sp_am__Scoring_Type__c == 'Profiles'}" >
+				<apex:outputPanel id="copyProfiles" rendered="{!es.sp_am__Scoring_Type__c == 'Profiles'}">
+					<apex:SelectList value="{!ProfileId}" size="1">
+						<apex:selectOptions value="{!Profiles}"/>
+						<apex:actionSupport event="onchange" action="{!getScoresReset}" rerender="Scores,copyProfiles" status="loadStatus"/>
+					</apex:SelectList>
+					<apex:actionStatus startText="Loading..." id="loadStatus"/>
+					<apex:commandButton value="Copy From Profile" rerender="copyProfiles" action="{!showCopy}"/>
+					<apex:SelectList value="{!OldProfileId}" size="1" rendered="{!showCopyForm}">
+						<apex:selectOptions value="{!Profiles}"/>
+						<apex:actionSupport />
+					</apex:SelectList>
+					<apex:commandButton value="Copy" rendered="{!showCopyForm}" action="{!getScores}" rerender="Scores" status="copyStatus"/>
+					<apex:commandButton value="Cancel Copy" rendered="{!showCopyForm}" action="{!getScoresReset}" rerender="Scores,copyProfiles" status="loadStatus"/>
+					<apex:actionStatus startText="Copying..." id="copyStatus"/>
+				</apex:outputPanel>
+			</apex:pageBlockSectionItem>
+			<apex:pageBlockSectionItem rendered="{!es.sp_am__Scoring_Type__c == 'Roles'}" >
+				<apex:outputPanel id="copyRoles" rendered="{!es.sp_am__Scoring_Type__c == 'Roles'}">
+					<apex:SelectList value="{!RoleId}" size="1">
+						<apex:selectOptions value="{!Roles}"/>
+						<apex:actionSupport event="onchange" action="{!getScoresReset}" rerender="Scores,copyRoles" status="loadStatus2"/>
+					</apex:SelectList>
+					<apex:actionStatus startText="Loading..." id="loadStatus2"/>
+					<apex:commandButton value="Copy From Role" rerender="copyRoles" action="{!showCopy}"/>
+					<apex:SelectList value="{!OldRoleId}" size="1" rendered="{!showCopyForm}">
+						<apex:selectOptions value="{!Roles}"/>
+						<apex:actionSupport />
+					</apex:SelectList>
+					<apex:commandButton value="Copy" rendered="{!showCopyForm}" action="{!getScores}" rerender="Scores" status="copyStatus2"/>
+					<apex:commandButton value="Cancel Copy" rendered="{!showCopyForm}" action="{!getScoresReset}" rerender="Scores,copyProfiles,copyRoles" status="loadStatus2"/>
+					<apex:actionStatus startText="Copying..." id="copyStatus2"/>
+				</apex:outputPanel>
+			</apex:pageBlockSectionItem>
+			<apex:actionRegion >
+			<apex:outputPanel id="Scores">
+				<apex:pageBlockTable value="{!Scores}" var="score" rendered="{!es.sp_am__Enable__c}">
+					<apex:column value="{!score.sp_am__Activity_Type__c}" />
+					<apex:column headerValue="Score Type" >
+						<apex:inputField value="{!score.sp_am__Score_Type__c}" />
+					</apex:column> />
+					<apex:column headerValue="Points">
+						<apex:inputField value="{!score.sp_am__Points__c}" />
+					</apex:column>
+				</apex:pageBlockTable>
+			</apex:outputPanel>
+			</apex:actionRegion>
+		</apex:pageBlockSection>
+	</apex:pageBlock>
+	</apex:outputPanel>
+</apex:outputPanel>
+</apex:Form>
+</apex:page>

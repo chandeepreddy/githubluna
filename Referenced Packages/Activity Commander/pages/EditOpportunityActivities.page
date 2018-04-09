@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity" extensions="sp_am.ActivitiesController" sidebar="false" title="Edit Opportunity Plan for {!Opportunity.Name}">
+<apex:SectionHeader title="{!Opportunity.Name}" subtitle="Edit Opportunity Plan" />
+<c:EditPlan />
+</apex:page>

@@ -1,0 +1,4 @@
+<apex:page standardController="Lead" extensions="sp_am.ActivitiesController" sidebar="false" title="Edit Lead Plan for {!Lead.Name}">
+<apex:SectionHeader title="{!Lead.Name}" subtitle="Edit Lead Plan" />
+<c:EditPlan />
+</apex:page>

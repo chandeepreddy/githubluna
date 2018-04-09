@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <webLinks>
+        <fullName>New_Event</fullName>
+        <availability>online</availability>
+        <description>This button is included with Activity Commander to allow for the proper creation of Events from the home page.</description>
+        <displayType>massActionButton</displayType>
+        <linkType>javascript</linkType>
+        <masterLabel>New Event</masterLabel>
+        <openType>onClickJavaScript</openType>
+        <protected>false</protected>
+        <requireRowSelection>false</requireRowSelection>
+        <url>window.top.location.href = &quot;/00U/e?retURL=%2Fhome%2Fhome.jsp&quot;</url>
+    </webLinks>
+</CustomObject>

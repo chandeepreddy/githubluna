@@ -1,0 +1,4 @@
+<apex:page standardController="Contact" extensions="sp_am.ActivitiesController" sidebar="false" title="Edit Contact Plan for {!Contact.Name}">
+<apex:SectionHeader title="{!Contact.Name}" subtitle="Edit Contact Plan" />
+<c:EditPlan />
+</apex:page>

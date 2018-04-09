@@ -1,0 +1,251 @@
+<apex:page controller="sp_am.EditAllController" action="{!getActivities}" sidebar="false" title="Activity Commander - Review and Plan"> 
+<apex:form >
+<apex:sectionHeader title="Activity Commander" subtitle="Review and Plan" />
+<apex:pageBlock >
+
+<apex:pageblocksection columns="1">
+<apex:pageBlocksectionItem >
+
+<apex:outputLabel value="Select a User" for="user"/>
+
+<apex:inputField value="{!ap.sp_am__User__c}" id="user">
+</apex:inputField>	 
+
+</apex:pageBlocksectionItem>
+<apex:pageBlocksectionItem >
+<apex:outputLabel value="Select a View" for="views"/>
+<apex:outputPanel >
+<apex:SelectList value="{!ListType}" size="1" Id="views">
+	<apex:selectOptions value="{!Views}"/>
+	<apex:actionsupport event="onchange" action="{!switchList}" rerender="activities, bottom, buttons" status="searchStatus"/>
+</apex:SelectList>
+<apex:commandButton value="Go" action="{!switchList}" rerender="activities,buttons,bottom" status="searchStatus"/>
+</apex:outputPanel>
+</apex:pageblocksectionItem>
+</apex:pageblocksection>
+</apex:pageBlock>
+<apex:actionStatus startText="Searching..." id="searchStatus"/>
+<apex:actionStatus startText="Switching to Edit Mode..." id="EditStatus"/>
+<apex:outputPanel id="bottom">
+<apex:pageBlock >
+<apex:pageBlockButtons id="buttons">
+	<apex:commandButton value="Save" action="{!save}" rerender="activities,buttons,bottom,tasktable,messages,messages2" status="saveStatus" rendered="{!Edit && (EditTasks || EditEvents)}" />
+	<apex:commandButton value="Cancel" action="{!cancel}" immediate="true"  rerender="activities,buttons,bottom,tasktable,taskscore,messages,messages2" rendered="{!Edit}" status="cancelStatus"/>
+	<apex:commandButton value="Edit" action="{!EditMode}" rerender="activities,buttons,bottom,tasktable" rendered="{!NOT(Edit) && ShowEditButton}" status="EditStatus"/>
+</apex:pageBlockButtons>
+<apex:actionStatus startText="Saving..." id="saveStatus"/>
+<apex:actionStatus startText="Cancelling..." id="cancelStatus"/>
+<apex:outputPanel id="activities">
+<apex:pageMessages id="messages" />
+<apex:pageBlockSection title="{!'Tasks (' + NumberTasks + ' records)'}" collapsible="true">
+	<apex:outputPanel id="Tasks">
+		<apex:outputText value="No Task Records Found" rendered="{!NOT(hasTasks)}" />
+		<apex:pageBlockTable value="{!Tasks}" var="task" rendered="{!hasTasks}" style="width: 1024px" width="1024px" id="tasktable">
+			<apex:column rendered="{!Edit && EditTasks && ($ObjectType.Task.fields.Subject.Accessible || $ObjectType.Task.fields.OwnerId.Accessible)}">
+				<apex:facet name="header">Subject / Assigned To</apex:facet>
+				<apex:outputPanel >								
+				<table>
+					<tr>
+						<td><apex:outputLabel value="Subject" style="font-weight: bold;"/></td>
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!task.task.Subject}" /></td>
+					</tr>
+					<tr>
+						<td><apex:outputLabel value="Assigned To" style="font-weight: bold;"/></td>
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!task.task.OwnerId}"/></td>
+					</tr>
+				</table>
+				</apex:outputPanel>
+			</apex:column>
+			<apex:column rendered="{!(NOT(Edit) || NOT(EditTasks)) && $ObjectType.Task.fields.Subject.Accessible}">
+				<apex:facet name="header">Subject</apex:facet>
+				<apex:outputLink value="/{!task.task.Id}">
+					<apex:outputField value="{!task.task.Subject}" />
+				</apex:outputLink>
+			</apex:column>
+			<apex:column rendered="{!Edit && EditTasks && ($ObjectType.Task.fields.WhoId.Accessible || $ObjectType.Task.fields.WhatId.Accessible)}" >
+				<apex:facet name="header">Name / Related To</apex:facet>
+				<apex:outputPanel >		
+				<table>
+					<tr>
+						<td><apex:outputLabel value="Name" style="font-weight: bold;"/></td>
+					</tr>
+					<tr>
+						<td><apex:outputField value="{!task.task.WhoId}" rendered="{!NOT($ObjectType.Task.fields.WhoId.Updateable)}"/>
+							<apex:inputField value="{!task.task.WhoId}" rendered="{!$ObjectType.Task.fields.WhoId.Updateable}"/>
+						</td>
+					</tr>
+					<tr>
+						<td><apex:outputLabel value="Related To" style="font-weight: bold;" rendered="{!NOT(task.IsLead)}"/></td>
+					</tr>
+					<tr>
+						<td><apex:outputField value="{!task.task.WhatId}" rendered="{!NOT(task.IsLead) && NOT($ObjectType.Task.fields.WhatId.Updateable)}"/>
+							<apex:inputField value="{!task.task.WhatId}" rendered="{!NOT(task.IsLead) && $ObjectType.Task.fields.WhatId.Updateable}" />
+						</td>
+					</tr>
+				</table>	
+				</apex:outputPanel>
+			</apex:column>
+			<apex:column rendered="{!(NOT(Edit) || NOT(EditTasks)) && $ObjectType.Task.fields.WhoId.Accessible}" >			
+				<apex:facet name="header">Name</apex:facet>
+				<apex:outputField value="{!task.task.WhoId}" />
+			</apex:column>
+			<apex:column rendered="{!(NOT(Edit) || NOT(EditTasks)) && $ObjectType.Task.fields.WhatId.Accessible}" >
+				<apex:facet name="header">Related To</apex:facet>
+				<apex:outputField value="{!task.task.WhatId}" />
+			</apex:column>
+			<apex:column rendered="{!$ObjectType.Task.fields.Type.Accessible}" >
+				<apex:facet name="header">Type</apex:facet>
+				<apex:inputField value="{!task.task.Type}" rendered="{!Edit && EditTasks && $ObjectType.Task.fields.Type.Updateable}"/>
+				<apex:outputField value="{!task.task.Type}" rendered="{!NOT(Edit) || NOT(EditTasks) || NOT($ObjectType.Task.fields.Type.Updateable)}"/>
+			</apex:column>
+			<apex:column rendered="{!$ObjectType.Task.fields.Description.Accessible}" >
+				<apex:facet name="header">Comments</apex:facet>
+				<apex:inputTextArea value="{!task.task.Description}" rendered="{!Edit && EditTasks && $ObjectType.Task.fields.Description.Updateable}" cols="40" rows="7"/>
+				<apex:outputText value="{!task.ShortComments}" rendered="{!NOT(Edit) || NOT(EditTasks) || NOT($ObjectType.Task.fields.Description.Updateable)}"/>
+			</apex:column>
+			<apex:column headerValue="Due Date" rendered="{!$ObjectType.Task.fields.ActivityDate.Accessible}">
+				<apex:inputField value="{!task.task.ActivityDate}" rendered="{!Edit && EditTasks && $ObjectType.Task.fields.ActivityDate.Updateable}"/>
+				<apex:outputField value="{!task.task.ActivityDate}" rendered="{!NOT(Edit) || NOT(EditTasks) || NOT($ObjectType.Task.fields.ActivityDate.Updateable)}"/>
+			</apex:column>
+			<apex:column headerValue="Status" rendered="{!$ObjectType.Task.fields.Status.Accessible}">
+				<apex:inputField value="{!task.task.Status}" rendered="{!Edit && EditTasks && $ObjectType.Task.fields.Status.Updateable}"/>
+				<apex:outputField value="{!task.task.Status}" rendered="{!NOT(Edit) || NOT(EditTasks) || NOT($ObjectType.Task.fields.Status.Updateable)}"/>
+			</apex:column>
+			<apex:column headerValue="Minutes" rendered="{!$Setup.Enable_Scoring__c.Enable__c && $ObjectType.Task.fields.sp_am__Minutes__c.Accessible}">
+				<apex:inputField value="{!task.task.sp_am__Minutes__c}" rendered="{!Edit && EditTasks && $ObjectType.Task.fields.sp_am__Minutes__c.Updateable}" style="width: 30px;"/>
+				<apex:outputField value="{!task.task.sp_am__Minutes__c}" rendered="{!NOT(Edit) || NOT(EditTasks) || NOT($ObjectType.Task.fields.sp_am__Minutes__c.Updateable)}"/>
+			</apex:column>	
+			<apex:column rendered="{!$Setup.Enable_Scoring__c.Enable__c && NOT(Edit) && $ObjectType.Task.fields.sp_am__Score__c.Accessible}" id="taskscore">
+				<apex:facet name="header">Score</apex:facet> 
+				<apex:facet name="footer">{!taskScore}</apex:facet>
+				<apex:outputField value="{!task.task.sp_am__Score__c}"/>
+			</apex:column>			
+		</apex:pageBlockTable>
+	</apex:outputPanel>
+</apex:pageBlockSection>
+<apex:pageBlockSection title="{!'Events (' + NumberEvents + ' records)'}" collapsible="true" rendered="{!ListType != 'Overdue' && ListType != 'Unscheduled'}">
+	<apex:outputPanel id="Events">
+		<apex:outputText value="No Event Records Found" rendered="{!NOT(hasEvents)}" />
+		<apex:pageBlockTable value="{!Events}" var="event" rendered="{!hasEvents}" style="width: 1024px" width="1024px">			
+			<apex:column rendered="{!Edit && EditEvents && ($ObjectType.Event.fields.Subject.Accessible || $ObjectType.Event.fields.OwnerId.Accessible)}">
+				<apex:facet name="header">Assigned To / Subject</apex:facet>
+				<apex:outputPanel >	
+				<table>
+					<tr>
+						<td><apex:outputLabel value="Subject" style="font-weight: bold;" rendered="{!$ObjectType.Event.fields.Subject.Accessible}"/></td>	
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.event.Subject}" rendered="{!NOT(event.event.IsChild)}" />
+							<apex:outputField value="{!event.event.Subject}" rendered="{!event.event.IsChild}" />
+						</td>	
+					</tr>
+					<tr>
+						<td><apex:outputLabel value="Assigned To" style="font-weight: bold;" rendered="{!$ObjectType.Event.fields.Subject.Accessible}"/></td>	
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.event.OwnerId}" rendered="{!NOT(event.event.IsChild)}"/>
+							<apex:outputField value="{!event.event.OwnerId}" rendered="{!event.event.IsChild}" />
+						</td>	
+					</tr>
+				</table>		
+				</apex:outputPanel>
+			</apex:column>
+			<apex:column rendered="{!NOT(Edit) || NOT($ObjectType.Event.fields.Subject.Accessible)}">
+				<apex:facet name="header">Subject</apex:facet>
+				<apex:outputLink value="/{!event.event.Id}">
+					<apex:outputField value="{!event.event.Subject}" rendered="{!NOT(Edit)}"/>
+				</apex:outputLink>
+			</apex:column>
+			<apex:column rendered="{!Edit && ($ObjectType.Event.fields.WhoId.Accessible || $ObjectType.Event.fields.WhatId.Accessible)}" >
+				<apex:facet name="header">Name / Related To</apex:facet> 
+				<apex:outputPanel >	
+				<table>
+					<tr>
+						<td><apex:outputLabel value="Name" style="font-weight: bold;" rendered="{!$ObjectType.Event.fields.WhoId.Accessible}"/></td>	
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.Event.WhoId}" rendered="{!NOT(event.event.IsChild)}"/>
+							<apex:outputField value="{!event.event.WhoId}" rendered="{!event.event.IsChild}" />
+						</td>	
+					</tr>
+					<tr>
+						<td><apex:outputLabel value="Related To" style="font-weight: bold;" rendered="{!NOT(event.IsLead) && $ObjectType.Event.fields.WhatId.Accessible}"/></td>	
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.Event.WhatId}" rendered="{!NOT(event.IsLead) && NOT(event.event.IsChild)}"/>
+							<apex:outputField value="{!event.event.WhoId}" rendered="{!event.event.IsChild}" />
+						</td>	
+					</tr>
+				</table>		
+				</apex:outputPanel>
+			</apex:column>
+			<apex:column rendered="{!NOT(Edit) && $ObjectType.Event.fields.WhoId.Accessible}" >		
+				<apex:facet name="header">Name</apex:facet> 	
+				<apex:outputField value="{!event.Event.WhoId}" />
+			</apex:column>
+			<apex:column rendered="{!NOT(Edit) && $ObjectType.Event.fields.WhatId.Accessible}" >
+				<apex:facet name="header">Related To</apex:facet> 
+				<apex:outputField value="{!event.Event.WhatId}" rendered="{!NOT(event.IsLead) && NOT(Edit)}" />
+			</apex:column>
+			<apex:column rendered="{!$ObjectType.Event.fields.Type.Accessible}" >
+				<apex:facet name="header">Type</apex:facet>
+				<apex:inputField value="{!event.event.Type}" rendered="{!Edit && NOT(event.event.IsChild)}"/>
+				<apex:outputField value="{!event.event.Type}" rendered="{!NOT(Edit) || event.event.IsChild}"/>
+			</apex:column>
+			<apex:column rendered="{!$ObjectType.Event.fields.Description.Accessible}" >
+				<apex:facet name="header">Description</apex:facet>
+				<apex:inputTextArea value="{!event.event.Description}" rendered="{!Edit && $ObjectType.Event.fields.Description.Updateable && NOT(event.event.IsChild)}" cols="40" rows="7"/>
+				<apex:outputText value="{!event.ShortComments}" rendered="{!NOT(Edit) || NOT($ObjectType.Event.fields.Description.Updateable) || event.event.IsChild}"/>
+			</apex:column>
+			<apex:column rendered="{!NOT(Edit)}">
+				<apex:facet name="header">Start</apex:facet>
+				<apex:outputField value="{!event.event.StartDateTime}" />
+			</apex:column>
+			<apex:column rendered="{!NOT(Edit)}">
+				<apex:facet name="header">End</apex:facet>
+				<apex:outputField value="{!event.event.EndDateTime}" />
+			</apex:column>
+			<apex:column rendered="{!Edit}">
+				<apex:facet name="header">Start/End</apex:facet>
+				<apex:outputPanel >
+				<table>
+					<tr>
+						<td><apex:outputLabel value="Start" style="font-weight: bold;"/></td>
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.event.StartDateTime}" rendered="{!NOT(event.event.IsChild)}"/>
+							<apex:outputField value="{!event.event.StartDateTime}" rendered="{!event.event.IsChild}" /></td>
+					</tr>
+					<tr>
+						<td><apex:outputLabel value="End" style="font-weight: bold;"/></td>
+					</tr>
+					<tr>
+						<td><apex:inputField value="{!event.event.EndDateTime}" rendered="{!NOT(event.event.IsChild)}"/>
+							<apex:outputField value="{!event.event.EndDateTime}" rendered="{!event.event.IsChild}" /></td>
+					</tr>
+				</table>
+				</apex:outputPanel>
+			</apex:column>
+			<apex:column rendered="{!$Setup.Enable_Scoring__c.Enable__c && $ObjectType.Event.fields.sp_am__Minutes__c.Accessible}">
+				<apex:facet name="header">Minutes</apex:facet> 
+				<apex:inputField value="{!event.event.sp_am__Minutes__c}" rendered="{!Edit && $ObjectType.Event.fields.sp_am__Minutes__c.Updateable && NOT(event.event.IsChild)}" style="width: 30px;"/>
+				<apex:outputField value="{!event.event.sp_am__Minutes__c}" rendered="{!NOT(Edit) || NOT($ObjectType.Event.fields.sp_am__Minutes__c.Updateable) || event.event.IsChild}"/>
+			</apex:column>
+			<apex:column rendered="{!$Setup.Enable_Scoring__c.Enable__c && NOT(Edit) && $ObjectType.Event.fields.sp_am__Score__c.Accessible}" id="eventscore">
+				<apex:facet name="header">Score</apex:facet> 
+				<apex:facet name="footer">{!eventScore}</apex:facet>
+				<apex:outputField value="{!event.Event.sp_am__Score__c}"/>
+			</apex:column>		
+		</apex:pageBlockTable>		
+	</apex:outputPanel>
+</apex:pageBlockSection>
+<apex:pageMessages id="messages2" />
+</apex:outputPanel>
+</apex:pageBlock>
+</apex:outputPanel>
+</apex:form>
+</apex:page>
